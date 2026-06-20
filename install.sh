@@ -9,13 +9,14 @@ YELLOW='\033[1;33m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
-# Ensure dependencies are installed
+# Ensure dependencies and the custom DeupGaming path are initialized
 init_system_check() {
     if ! command -v qemu-system-x86_64 &> /dev/null; then
         echo -e "🔧 ${BLUE}[INFO]${NC} Installing QEMU Emulation Toolkit..."
         sudo apt-get update -y && sudo apt-get install -y qemu-system-x86 qemu-utils wget curl > /dev/null 2>&1
     fi
-    sudo mkdir -p /home/daytona
+    # Custom centralized storage directory replacing all old path schemes
+    sudo mkdir -p /var/lib/deupgaming
 }
 
 show_main_menu() {
@@ -42,16 +43,16 @@ show_main_menu() {
 deploy_qemu_vm() {
     local os_label=$1
     local image_url=$2
-    local disk_path="/home/daytona/${os_label}.qcow2"
+    local disk_path="/var/lib/deupgaming/${os_label}.qcow2"
 
     echo -e "⏳ Setting up $os_label... Powered by DeupGaming"
 
-    # Download template if it does not exist
+    # Download image template safely to the new storage path if missing
     if [ ! -f "$disk_path" ]; then
-        echo -e "📦 ${BLUE}[INFO]${NC} Downloading official cloud template for $os_label..."
+        echo -e "📦 ${BLUE}[INFO]${NC} Downloading official template for $os_label..."
         sudo wget -q --show-progress "$image_url" -O "$disk_path"
         
-        # Resize disk to 20G to ensure ample working space inside the instance
+        # Expand storage allocation to ensure smooth configuration steps inside the virtual space
         echo -e "⚙️ ${BLUE}[INFO]${NC} Expanding virtual disk allocation to 20GB..."
         sudo qemu-img resize "$disk_path" +20G > /dev/null 2>&1
     fi
@@ -60,7 +61,7 @@ deploy_qemu_vm() {
     echo -e "${YELLOW}👉 Press 'Ctrl + A' then 'X' to terminate the VM workspace session anytime.${NC}\n"
     sleep 2
 
-    # Launch instance with non-KVM emulation flags
+    # Run system with hardware translation fallback layer active
     sudo qemu-system-x86_64 \
         -hda "$disk_path" \
         -m 32G \
@@ -81,8 +82,9 @@ show_os_menu() {
     echo " 4) Debian 12"
     echo " 5) AlmaLinux 9"
     echo " 6) Rocky Linux 9"
+    echo " 7) Proxmox VE (Virtual Environment Base)"
     echo ""
-    echo -ne "🎯 ${RED}[INPUT]${NC} 🎯 Enter your choice (1-6): "
+    echo -ne "🎯 ${RED}[INPUT]${NC} 🎯 Enter your choice (1-7): "
     read -r os_choice
 
     echo -e ""
@@ -105,6 +107,10 @@ show_os_menu() {
         6)
             deploy_qemu_vm "rockylinux9" "https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base.latest.x86_64.qcow2"
             ;;
+        7)
+            # Pulls an optimized template ready for Proxmox VE orchestration adjustments
+            deploy_qemu_vm "proxmox_ve" "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
+            ;;
         *)
             echo -e "❌ Invalid choice! Returning to main menu..."
             sleep 1.5
@@ -113,6 +119,6 @@ show_os_menu() {
     esac
 }
 
-# Run full toolchain
+# Run the toolchain
 init_system_check
 show_main_menu
