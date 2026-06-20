@@ -9,8 +9,21 @@ YELLOW='\033[1;33m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
+# Centralized Branding Header
+show_branding_banner() {
+    echo -e "${CYAN}┌────────────────────────────────────────┐${NC}"
+    echo -e "${CYAN}│                                        │${NC}"
+    echo -e "${CYAN}│             ${WHITE}DEUP GAMING${CYAN}                │${NC}"
+    echo -e "${CYAN}│          ${WHITE}ADVANCED HOSTING${CYAN}              │${NC}"
+    echo -e "${CYAN}│                                        │${NC}"
+    echo -e "${CYAN}└────────────────────────────────────────┘${NC}"
+    echo -e "         ${WHITE}Powered by DeupGaming${NC}\n"
+}
+
 # Ensure dependencies and the custom DeupGaming path are initialized
 init_system_check() {
+    clear
+    show_branding_banner
     if ! command -v qemu-system-x86_64 &> /dev/null; then
         echo -e "🔧 ${BLUE}[INFO]${NC} Installing QEMU Emulation Toolkit..."
         sudo apt-get update -y && sudo apt-get install -y qemu-system-x86 qemu-utils wget curl > /dev/null 2>&1
@@ -21,6 +34,7 @@ init_system_check() {
 
 show_main_menu() {
     clear
+    show_branding_banner
     echo -e "📋 ${YELLOW}Main Menu:${NC}"
     echo -e " 1) 🆕 Create a new VM"
     echo -e " 0) 👋 Exit"
@@ -72,7 +86,8 @@ deploy_qemu_vm() {
 }
 
 show_os_menu() {
-    echo -e ""
+    clear
+    show_branding_banner
     echo -e "🎯 ${RED}[INPUT]${NC} 🎯 Enter your choice: 1"
     echo -e "📋 ${BLUE}[INFO]${NC} 🆕 Creating a new VM"
     echo -e "📋 ${BLUE}[INFO]${NC} 🌐 Select an OS template to boot:"
@@ -108,7 +123,6 @@ show_os_menu() {
             deploy_qemu_vm "rockylinux9" "https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base.latest.x86_64.qcow2"
             ;;
         7)
-            # Pulls an optimized template ready for Proxmox VE orchestration adjustments
             deploy_qemu_vm "proxmox_ve" "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
             ;;
         *)
